@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* HSL Color Palette - Professional & Trustworthy Blue Theme */
+  --background: 210 40% 98%;    /* Very light blue-grey */
+  --foreground: 222 47% 11%;    /* Deep navy text */
+  
+  --primary: 221 83% 53%;       /* Vibrant Trust Blue */
+  --primary-foreground: 210 40% 98%;
+  
+  --secondary: 210 40% 96%;     /* Soft blue-grey for secondary actions */
+  --secondary-foreground: 222 47% 11%;
+  
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  
+  --accent: 142 76% 36%;        /* Green for success/money positive */
+  --accent-foreground: 355 100% 97%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 221 83% 53%;
+  
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  --radius: 0.75rem;
+  
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    @apply font-bold tracking-tight text-slate-900;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-xl;
+  }
+
+  .input-modern {
+    @apply transition-all duration-200 focus:ring-4 focus:ring-primary/10 focus:border-primary border-slate-200 hover:border-slate-300;
+  }
+}
+
+/* Rich Text Content Styling */
+.prose h2 {
+  @apply text-2xl font-bold mt-8 mb-4 text-slate-900;
+  font-family: var(--font-display);
+}
+
+.prose h3 {
+  @apply text-xl font-semibold mt-6 mb-3 text-slate-800;
+  font-family: var(--font-display);
+}
+
+.prose p {
+  @apply text-slate-600 leading-relaxed mb-4 text-base;
+}
+
+.prose ul {
+  @apply list-disc list-inside mb-4 space-y-2 text-slate-600;
+}
+
+.prose ol {
+  @apply list-decimal list-inside mb-4 space-y-2 text-slate-600;
+}
+
+.prose a {
+  @apply text-primary font-medium hover:underline;
+}
