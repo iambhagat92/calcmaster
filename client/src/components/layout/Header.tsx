@@ -1,6 +1,5 @@
-```
 import { Link, useLocation } from "wouter";
-import { Calculator, Menu, X } from "lucide-react";
+import { Calculator, Menu } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -38,9 +37,8 @@ export function Header() {
             <Link
               key={item.name}
               href={item.href}
-              className={`text - sm font - medium transition - colors hover: text - primary ${
-  location === item.href ? "text-primary" : "text-muted-foreground"
-} `}
+              className={`text-sm font-medium transition-colors hover:text-primary ${location === item.href ? "text-primary" : "text-muted-foreground"
+                }`}
             >
               {item.name}
             </Link>
@@ -87,7 +85,7 @@ export function Header() {
                           {cat.calculators.map((calc) => (
                             <Link
                               key={calc.id}
-                              href={`/ calculators / ${ calc.slug } `}
+                              href={`/calculators/${calc.slug}`}
                               className="text-sm text-foreground hover:text-primary transition-colors"
                               onClick={() => setIsOpen(false)}
                             >
