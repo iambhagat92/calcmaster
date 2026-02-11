@@ -1,9 +1,11 @@
+```
 import { Link, useLocation } from "wouter";
-import { Calculator, Menu, X, Search } from "lucide-react";
+import { Calculator, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useCategories } from "@/hooks/use-calculators";
+import { Search } from "@/components/Search";
 
 export function Header() {
   const [location] = useLocation();
@@ -36,17 +38,14 @@ export function Header() {
             <Link
               key={item.name}
               href={item.href}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                location === item.href ? "text-primary" : "text-muted-foreground"
-              }`}
+              className={`text - sm font - medium transition - colors hover: text - primary ${
+  location === item.href ? "text-primary" : "text-muted-foreground"
+} `}
             >
               {item.name}
             </Link>
           ))}
-          <Button variant="outline" size="sm" className="gap-2 hidden lg:flex">
-            <Search className="h-4 w-4" />
-            <span>Search</span>
-          </Button>
+          <Search />
           <Button size="sm" className="shadow-lg shadow-primary/20">
             Get Started
           </Button>
@@ -88,7 +87,7 @@ export function Header() {
                           {cat.calculators.map((calc) => (
                             <Link
                               key={calc.id}
-                              href={`/calculators/${calc.slug}`}
+                              href={`/ calculators / ${ calc.slug } `}
                               className="text-sm text-foreground hover:text-primary transition-colors"
                               onClick={() => setIsOpen(false)}
                             >

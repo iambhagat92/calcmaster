@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertCalculatorSchema, insertFaqSchema, insertBlogPostSchema, calculators, categories, blogPosts } from './schema';
+import { insertCalculatorSchema, insertFaqSchema, insertBlogPostSchema, calculators, categories, blogPosts, faqs } from './schema';
 
 export const api = {
   calculators: {
@@ -14,7 +14,7 @@ export const api = {
       method: 'GET' as const,
       path: '/api/calculators/:slug' as const,
       responses: {
-        200: z.custom<typeof calculators.$inferSelect & { faqs: typeof insertFaqSchema[], category: typeof categories.$inferSelect }>(),
+        200: z.custom<typeof calculators.$inferSelect & { faqs: typeof faqs.$inferSelect[], category: typeof categories.$inferSelect & { calculators: typeof calculators.$inferSelect[] } }>(),
         404: z.object({ message: z.string() }),
       },
     },

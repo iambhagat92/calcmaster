@@ -11,8 +11,9 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbS
 import { ChevronRight } from "lucide-react";
 
 export default function CalculatorPage() {
-  const [match, params] = useRoute("/calculators/:slug");
+  const [match, params] = useRoute("/:category/:slug");
   const slug = params?.slug || "";
+  const categorySlug = params?.category || "";
   const { data: calculator, isLoading, error } = useCalculator(slug);
 
   if (isLoading) {
@@ -58,6 +59,22 @@ export default function CalculatorPage() {
             {JSON.stringify(calculator.schemaMarkup)}
           </script>
         )}
+        {calculator.faqs && calculator.faqs.length > 0 && (
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": calculator.faqs.map(faq => ({
+                "@type": "Question",
+                "name": faq.question,
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": faq.answer
+                }
+              }))
+            })}
+          </script>
+        )}
       </Helmet>
 
       <Header />
@@ -72,7 +89,7 @@ export default function CalculatorPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href={`/#categories`}>{calculator.category?.name || "Calculators"}</BreadcrumbLink>
+                <BreadcrumbLink href={`/${categorySlug}`}>{calculator.category?.name || "Calculators"}</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
@@ -128,28 +145,19 @@ export default function CalculatorPage() {
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
               <h3 className="font-display font-bold text-lg mb-4">Related Calculators</h3>
               <ul className="space-y-3">
-                {/* This could be dynamic based on category */}
-                <li>
-                  <Link href="/calculators/mortgage-calculator" className="flex items-center text-slate-600 hover:text-primary transition-colors group">
-                    <ChevronRight className="h-4 w-4 mr-2 text-slate-300 group-hover:text-primary" />
-                    Mortgage Calculator
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/calculators/loan-calculator" className="flex items-center text-slate-600 hover:text-primary transition-colors group">
-                    <ChevronRight className="h-4 w-4 mr-2 text-slate-300 group-hover:text-primary" />
-                    Loan Calculator
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/calculators/bmi-calculator" className="flex items-center text-slate-600 hover:text-primary transition-colors group">
-                    <ChevronRight className="h-4 w-4 mr-2 text-slate-300 group-hover:text-primary" />
-                    BMI Calculator
-                  </Link>
-                </li>
+                {calculator.category?.calculators
+                  ?.filter(c => c.slug !== calculator.slug)
+                  .map(c => (
+                    <li key={c.id}>
+                      <Link href={`/${calculator.category!.slug}/${c.slug}`} className="flex items-center text-slate-600 hover:text-primary transition-colors group">
+                        <ChevronRight className="h-4 w-4 mr-2 text-slate-300 group-hover:text-primary" />
+                        {c.name}
+                      </Link>
+                    </li>
+                  ))}
               </ul>
             </div>
-            
+
             <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10">
               <h3 className="font-display font-bold text-lg mb-2 text-primary">Need Help?</h3>
               <p className="text-sm text-slate-600 mb-4">

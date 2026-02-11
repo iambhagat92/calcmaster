@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { DollarSign, Percent, Calendar } from "lucide-react";
+import { DollarSign, Percent, Calendar, Calculator } from "lucide-react";
 
 const schema = z.object({
   homePrice: z.coerce.number().min(1000, "Price must be at least $1,000"),

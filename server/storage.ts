@@ -16,11 +16,11 @@ import { eq } from "drizzle-orm";
 export interface IStorage {
   // Categories
   getCategories(): Promise<CategoryWithCalculators[]>;
-  
+
   // Calculators
-  getCalculators(): Promise<Calculator[]>;
+  getCalculators(): Promise<(Calculator & { category: Category | null })[]>;
   getCalculatorBySlug(slug: string): Promise<CalculatorWithFaqs | undefined>;
-  
+
   // Blog
   getBlogPosts(): Promise<BlogPost[]>;
   getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
@@ -41,8 +41,12 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  async getCalculators(): Promise<Calculator[]> {
-    return await db.select().from(calculators);
+  async getCalculators(): Promise<(Calculator & { category: Category | null })[]> {
+    return await db.query.calculators.findMany({
+      with: {
+        category: true,
+      },
+    });
   }
 
   async getCalculatorBySlug(slug: string): Promise<CalculatorWithFaqs | undefined> {
@@ -50,7 +54,11 @@ export class DatabaseStorage implements IStorage {
       where: eq(calculators.slug, slug),
       with: {
         faqs: true,
-        category: true,
+        category: {
+          with: {
+            calculators: true,
+          },
+        },
       },
     });
   }

@@ -1,48 +1,48 @@
-import { pgTable, text, serial, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // === CATEGORIES ===
-export const categories = pgTable("categories", {
-  id: serial("id").primaryKey(),
+export const categories = sqliteTable("categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
 });
 
 // === CALCULATORS ===
-export const calculators = pgTable("calculators", {
-  id: serial("id").primaryKey(),
-  categoryId: serial("category_id").references(() => categories.id),
+export const calculators = sqliteTable("calculators", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  categoryId: integer("category_id").references(() => categories.id),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description").notNull(), // Short description for cards
   content: text("content").notNull(), // Long form content (Rich Text)
   metaTitle: text("meta_title").notNull(),
   metaDescription: text("meta_description").notNull(),
-  schemaMarkup: jsonb("schema_markup"), // For SEO Structured Data
-  createdAt: timestamp("created_at").defaultNow(),
+  schemaMarkup: text("schema_markup", { mode: "json" }), // For SEO Structured Data
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(strftime('%s', 'now'))`),
 });
 
 // === FAQS ===
-export const faqs = pgTable("faqs", {
-  id: serial("id").primaryKey(),
-  calculatorId: serial("calculator_id").references(() => calculators.id),
+export const faqs = sqliteTable("faqs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  calculatorId: integer("calculator_id").references(() => calculators.id),
   question: text("question").notNull(),
   answer: text("answer").notNull(),
 });
 
 // === BLOG POSTS ===
-export const blogPosts = pgTable("blog_posts", {
-  id: serial("id").primaryKey(),
+export const blogPosts = sqliteTable("blog_posts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   excerpt: text("excerpt").notNull(),
   content: text("content").notNull(),
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),
-  publishedAt: timestamp("published_at").defaultNow(),
+  publishedAt: integer("published_at", { mode: "timestamp" }).default(sql`(strftime('%s', 'now'))`),
 });
 
 // === RELATIONS ===
@@ -84,5 +84,5 @@ export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 
 // === API RESPONSE TYPES ===
-export type CalculatorWithFaqs = Calculator & { faqs: Faq[]; category?: Category };
+export type CalculatorWithFaqs = Calculator & { faqs: Faq[]; category: CategoryWithCalculators | null };
 export type CategoryWithCalculators = Category & { calculators: Calculator[] };

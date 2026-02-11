@@ -7,7 +7,7 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  
+
   // === API ROUTES ===
   app.get(api.categories.list.path, async (req, res) => {
     const categories = await storage.getCategories();
@@ -49,26 +49,34 @@ export async function registerRoutes(
     const urls = [
       `${baseUrl}/`,
       `${baseUrl}/blog`,
-      ...calculators.map((c) => `${baseUrl}/calculators/${c.slug}`),
+      ...calculators.map((c) => `${baseUrl}/${c.category?.slug || 'calculators'}/${c.slug}`),
       ...posts.map((p) => `${baseUrl}/blog/${p.slug}`),
     ];
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${urls
-    .map(
-      (url) => `
+        .map(
+          (url) => `
   <url>
     <loc>${url}</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>`
-    )
-    .join("")}
+        )
+        .join("")}
 </urlset>`;
 
     res.header("Content-Type", "application/xml");
     res.send(sitemap);
+  });
+
+  // === SEO: ROBOTS.TXT ===
+  app.get("/robots.txt", (req, res) => {
+    res.type("text/plain");
+    res.send(`User-agent: *
+ Allow: /
+ Sitemap: https://${req.get("host")}/sitemap.xml`);
   });
 
   // === SEED DATA ON STARTUP ===
@@ -86,6 +94,12 @@ async function seedDatabase() {
   // 1. Categories
   const finance = await storage.createCategory({ name: "Financial", slug: "financial", description: "Money matters." });
   const health = await storage.createCategory({ name: "Health & Fitness", slug: "health", description: "Body metrics." });
+  const math = await storage.createCategory({ name: "Math & Science", slug: "math", description: "Useful math tools." });
+  const construction = await storage.createCategory({ name: "Construction", slug: "construction", description: "Builder tools." });
+  const conversion = await storage.createCategory({ name: "Conversion", slug: "conversion", description: "Unit converters." });
+  const education = await storage.createCategory({ name: "Education", slug: "education", description: "Student tools." });
+  const time = await storage.createCategory({ name: "Time & Date", slug: "time-date", description: "Time management." });
+  const tech = await storage.createCategory({ name: "Technology", slug: "tech", description: "Digital tools." });
   const common = await storage.createCategory({ name: "General", slug: "general", description: "Common daily calculators." });
 
   // 2. Calculators
@@ -226,6 +240,57 @@ async function seedDatabase() {
     schemaMarkup: {}
   });
 
+  // Auto Loan
+  await storage.createCalculator({
+    categoryId: finance.id,
+    name: "Auto Loan Calculator",
+    slug: "auto-loan-calculator",
+    description: "Calculate your monthly car payments.",
+    metaTitle: "Auto Loan Calculator - Estimate Monthly Car Payments",
+    metaDescription: "Calculate your monthly auto loan payments, including interest and trade-in value.",
+    content: "<h2>Auto Loan Calculator</h2><p>Find out how much your new car will cost you each month.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Auto Loan Calculator",
+      "applicationCategory": "FinanceApplication"
+    }
+  });
+
+  // Compound Interest
+  await storage.createCalculator({
+    categoryId: finance.id,
+    name: "Compound Interest Calculator",
+    slug: "compound-interest-calculator",
+    description: "See how your money grows with compound interest.",
+    metaTitle: "Compound Interest Calculator - Growth Over Time",
+    metaDescription: "Calculate the future value of your investments with compound interest.",
+    content: "<h2>Compound Interest Calculator</h2><p>Visualize the power of compound interest over time.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Compound Interest Calculator",
+      "applicationCategory": "FinanceApplication"
+    }
+  });
+
+  // Retirement
+  await storage.createCalculator({
+    categoryId: finance.id,
+    name: "Retirement Calculator",
+    slug: "retirement-calculator",
+    description: "Plan your retirement savings and goals.",
+    metaTitle: "Retirement Calculator - 401k & IRA Planning",
+    metaDescription: "Calculate how much you need to save for retirement based on your current age, savings, and goals.",
+    content: "<h2>Retirement Calculator</h2><p>Planning for retirement is one of the most important financial steps you can take. Use this tool to see if you are on track.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Retirement Calculator",
+      "applicationCategory": "FinanceApplication"
+    }
+  });
+
   // Calorie
   await storage.createCalculator({
     categoryId: health.id,
@@ -236,6 +301,250 @@ async function seedDatabase() {
     metaDescription: "Calculate how many calories you need to maintain, lose, or gain weight.",
     content: "<h2>Calorie Calculator</h2><p>Use the Mifflin-St Jeor equation to estimate your Basal Metabolic Rate (BMR) and Total Daily Energy Expenditure (TDEE).</p>",
     schemaMarkup: {}
+  });
+
+  // Body Fat
+  await storage.createCalculator({
+    categoryId: health.id,
+    name: "Body Fat Calculator",
+    slug: "body-fat-calculator",
+    description: "Estimate your body fat percentage.",
+    metaTitle: "Body Fat Calculator - US Navy Method",
+    metaDescription: "Calculate your body fat percentage using the US Navy method based on your measurements.",
+    content: "<h2>Body Fat Calculator</h2><p>Track your fitness progress by keeping an eye on your body fat percentage.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Body Fat Calculator",
+      "applicationCategory": "HealthApplication"
+    }
+  });
+
+  // Pregnancy
+  await storage.createCalculator({
+    categoryId: health.id,
+    name: "Pregnancy Calculator",
+    slug: "pregnancy-calculator",
+    description: "Calculate your due date based on LMP.",
+    metaTitle: "Pregnancy Due Date Calculator",
+    metaDescription: "Estimate your baby's due date and significant pregnancy milestones.",
+    content: "<h2>Pregnancy Due Date Calculator</h2><p>Find out when your baby is due and key dates for your pregnancy journey.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Pregnancy Calculator",
+      "applicationCategory": "HealthApplication"
+    }
+  });
+
+
+
+  // Scientific
+  await storage.createCalculator({
+    categoryId: math.id,
+    name: "Scientific Calculator",
+    slug: "scientific-calculator",
+    description: "Advanced calculator with scientific functions.",
+    metaTitle: "Scientific Calculator - Online Math Tool",
+    metaDescription: "Perform advanced calculations including trigonometry, logarithms, and more.",
+    content: "<h2>Scientific Calculator</h2><p>A powerful tool for complex mathematical operations.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Scientific Calculator",
+      "applicationCategory": "MathApplication"
+    }
+  });
+
+  // Statistics
+  await storage.createCalculator({
+    categoryId: math.id,
+    name: "Statistics Calculator",
+    slug: "statistics-calculator",
+    description: "Calculate mean, median, mode, and more.",
+    metaTitle: "Statistics Calculator - Mean, Median, Mode",
+    metaDescription: "Analyze your dataset with our comprehensive statistics calculator.",
+    content: "<h2>Statistics Calculator</h2><p>Enter your data set to calculate common statistical properties.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Statistics Calculator",
+      "applicationCategory": "MathApplication"
+    }
+  });
+
+  // Percentage
+  await storage.createCalculator({
+    categoryId: math.id,
+    name: "Percentage Calculator",
+    slug: "percentage-calculator",
+    description: "Solve common percentage problems.",
+    metaTitle: "Percentage Calculator - 3-in-1 Tool",
+    metaDescription: "Easily calculate percentages, percentage changes, and more.",
+    content: "<h2>Percentage Calculator</h2><p>Reference tool for all your percentage calculation needs.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Percentage Calculator",
+      "applicationCategory": "MathApplication"
+    }
+  });
+
+
+
+  // Concrete
+  await storage.createCalculator({
+    categoryId: construction.id,
+    name: "Concrete Calculator",
+    slug: "concrete-calculator",
+    description: "Estimate bags of concrete needed.",
+    metaTitle: "Concrete Calculator - Slabs & Footings",
+    metaDescription: "Calculate concrete volume and bags needed for your project.",
+    content: "<h2>Concrete Calculator</h2><p>Plan your pour with accurate volume and bag estimates.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Concrete Calculator",
+      "applicationCategory": "ConstructionApplication"
+    }
+  });
+
+  // Paint
+  await storage.createCalculator({
+    categoryId: construction.id,
+    name: "Paint Calculator",
+    slug: "paint-calculator",
+    description: "Estimate paint gallons for walls.",
+    metaTitle: "Paint Calculator - Room Coverage",
+    metaDescription: "Find out how much paint you need for your room dimensions.",
+    content: "<h2>Paint Calculator</h2><p>Don't buy too much or too little paint. Calculate coverage here.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Paint Calculator",
+      "applicationCategory": "ConstructionApplication"
+    }
+  });
+
+  // Unit Converter
+  await storage.createCalculator({
+    categoryId: conversion.id,
+    name: "Unit Converter",
+    slug: "unit-converter",
+    description: "Convert length, weight, volume, and temp.",
+    metaTitle: "Universal Unit Converter",
+    metaDescription: "Convert between metric and imperial units easily.",
+    content: "<h2>Unit Converter</h2><p>A simple tool for all your conversion needs.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Unit Converter",
+      "applicationCategory": "UtilityApplication"
+    }
+  });
+
+
+
+  // Grade
+  await storage.createCalculator({
+    categoryId: education.id,
+    name: "Grade Calculator",
+    slug: "grade-calculator",
+    description: "Calculate what you need on your final exam.",
+    metaTitle: "Grade Calculator - Final Exam Score",
+    metaDescription: "Determine the score you need on your final exam to achieve your target grade.",
+    content: "<h2>Grade Calculator</h2><p>Stay on top of your studies. find out exactly what score you need.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Grade Calculator",
+      "applicationCategory": "EducationalApplication"
+    }
+  });
+
+  // GPA
+  await storage.createCalculator({
+    categoryId: education.id,
+    name: "GPA Calculator",
+    slug: "gpa-calculator",
+    description: "Calculate your semester GPA.",
+    metaTitle: "GPA Calculator - College & High School",
+    metaDescription: "Easy to use GPA calculator for high school and college students.",
+    content: "<h2>GPA Calculator</h2><p>Track your academic performance semester by semester.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "GPA Calculator",
+      "applicationCategory": "EducationalApplication"
+    }
+  });
+
+  // Age
+  await storage.createCalculator({
+    categoryId: time.id,
+    name: "Age Calculator",
+    slug: "age-calculator",
+    description: "Calculate age in years, months, days.",
+    metaTitle: "Age Calculator - Date of Birth",
+    metaDescription: "Calculate your exact age in years, months, and days based on your date of birth.",
+    content: "<h2>Age Calculator</h2><p>Find out exactly how old you are down to the day.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Age Calculator",
+      "applicationCategory": "UtilityApplication"
+    }
+  });
+
+  // Date
+  await storage.createCalculator({
+    categoryId: time.id,
+    name: "Date Calculator",
+    slug: "date-calculator",
+    description: "Days between dates or add to date.",
+    metaTitle: "Date Calculator - Days Between Dates",
+    metaDescription: "Calculate the duration between two dates or add days to a specific date.",
+    content: "<h2>Date Calculator</h2><p>Planning an event? Calculate days remaining or past dates easily.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Date Calculator",
+      "applicationCategory": "UtilityApplication"
+    }
+  });
+
+  // Bandwidth
+  await storage.createCalculator({
+    categoryId: tech.id,
+    name: "Bandwidth Calculator",
+    slug: "bandwidth-calculator",
+    description: "Estimate file download time.",
+    metaTitle: "Bandwidth Calculator - Download Speed",
+    metaDescription: "Calculate how long it will take to download a file based on your internet speed.",
+    content: "<h2>Bandwidth Calculator</h2><p>Estimate download times for files of any size.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Bandwidth Calculator",
+      "applicationCategory": "UtilityApplication"
+    }
+  });
+
+  // File Size
+  await storage.createCalculator({
+    categoryId: tech.id,
+    name: "File Size Calculator",
+    slug: "file-size-calculator",
+    description: "Convert between KB, MB, GB, TB.",
+    metaTitle: "File Size Converter - Bytes to GB",
+    metaDescription: "Convert computer data storage units easily.",
+    content: "<h2>File Size Converter</h2><p>Quickly convert between different digital storage units.</p>",
+    schemaMarkup: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "File Size Converter",
+      "applicationCategory": "UtilityApplication"
+    }
   });
 
   // 3. Blog Posts

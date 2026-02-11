@@ -9,13 +9,19 @@ import CalculatorPage from "@/pages/CalculatorPage";
 import BlogList from "@/pages/BlogList";
 import BlogPost from "@/pages/BlogPost";
 
+import CategoryPage from "@/pages/CategoryPage";
+
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/calculators/:slug" component={CalculatorPage} />
       <Route path="/blog" component={BlogList} />
       <Route path="/blog/:slug" component={BlogPost} />
+
+      {/* Category based routes */}
+      <Route path="/:category" component={CategoryPage} />
+      <Route path="/:category/:slug" component={CalculatorPage} />
+
       <Route component={NotFound} />
     </Switch>
   );
