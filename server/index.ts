@@ -59,41 +59,43 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
-  await registerRoutes(httpServer, app);
+let setupPromise: Promise<void> | null = null;
 
-  app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+export async function setupApp() {
+  if (setupPromise) return setupPromise;
 
-    console.error("Internal Server Error:", err);
+  setupPromise = (async () => {
+    await registerRoutes(httpServer, app);
 
-    if (res.headersSent) {
-      return next(err);
+    app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+
+      console.error("Internal Server Error:", err);
+
+      if (res.headersSent) {
+        return next(err);
+      }
+
+      return res.status(status).json({ message });
+    });
+
+    if (process.env.NODE_ENV === "production") {
+      if (process.env.VERCEL !== "1") {
+        serveStatic(app);
+      }
+    } else {
+      const { setupVite } = await import("./vite");
+      await setupVite(httpServer, app);
     }
+  })();
 
-    return res.status(status).json({ message });
-  });
+  return setupPromise;
+}
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "production") {
-    if (process.env.VERCEL !== "1") {
-      serveStatic(app);
-    }
-  } else {
-    const { setupVite } = await import("./vite");
-    await setupVite(httpServer, app);
-  }
-
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || "5000", 10);
-
-  if (process.env.VERCEL !== "1") {
+if (process.env.VERCEL !== "1") {
+  setupApp().then(() => {
+    const port = parseInt(process.env.PORT || "5000", 10);
     httpServer.listen(
       {
         port,
@@ -103,7 +105,7 @@ app.use((req, res, next) => {
         log(`serving on port ${port}`);
       },
     );
-  }
-})();
+  });
+}
 
 export default app;
